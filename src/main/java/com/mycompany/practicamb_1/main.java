@@ -131,7 +131,6 @@ public class main {
     private static void searchDocuments(String desc) throws SolrServerException, IOException {
         HttpSolrClient solr = new HttpSolrClient.Builder("http://localhost:8983/solr/micoleccion").build();
         SolrQuery query = new SolrQuery();
-        // System.out.println(desc);
         query.setQuery("*");
         query.addFilterQuery("text: "+desc);
         QueryResponse rsp = solr.query(query);
