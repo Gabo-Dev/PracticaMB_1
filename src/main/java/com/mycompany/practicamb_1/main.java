@@ -83,12 +83,17 @@ public class main {
                     //  indice
                     if (line.startsWith(".W", 0)) {
                         //desc.add(line);
-                        text = sc.nextLine();
+                        text = sc.next() + " ";
+                        for (int i = 0; i < 4; i++) {
+                            text = text + sc.next()+" ";
+                        }
+                        text = text.replaceAll("[\\[\\](){}]","");
                         searchDocuments(text);
                     }
+                    text="";
+                    
                 }
                
-                //searchDocuments(title);
             }
         }
 
@@ -126,13 +131,15 @@ public class main {
     private static void searchDocuments(String desc) throws SolrServerException, IOException {
         HttpSolrClient solr = new HttpSolrClient.Builder("http://localhost:8983/solr/micoleccion").build();
         SolrQuery query = new SolrQuery();
-        query.setQuery("text");
+        // System.out.println(desc);
+        query.setQuery("*");
+        query.addFilterQuery("text: "+desc);
         QueryResponse rsp = solr.query(query);
         SolrDocumentList docs = rsp.getResults();
          int tm = docs.size();
         System.out.println("Tamaño de la consulta: " + tm);
-        /*for (int i = 0; i < tm; i++) {
-            System.out.println(docs.get(i).get("title"));
-        }*/
+        for (int i = 0; i < tm; i++) {
+            System.out.println(docs.get(i));
+        }
     }
 }
