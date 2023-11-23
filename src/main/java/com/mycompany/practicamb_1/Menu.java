@@ -13,9 +13,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
+
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -34,6 +34,7 @@ import org.apache.solr.common.params.CoreAdminParams;
 public class Menu extends javax.swing.JFrame {
 
     SolrDocumentList docs = new SolrDocumentList(), trecDoc = new SolrDocumentList();
+    int noConsultas = 0;
 
     /**
      * Creates new form Menu
@@ -55,7 +56,6 @@ public class Menu extends javax.swing.JFrame {
 
         indexaBtn = new javax.swing.JButton();
         consultaBtn = new javax.swing.JButton();
-        trecBtn = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         textInfo = new javax.swing.JTextArea();
 
@@ -75,13 +75,6 @@ public class Menu extends javax.swing.JFrame {
             }
         });
 
-        trecBtn.setText("Trec Eva");
-        trecBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                trecBtnActionPerformed(evt);
-            }
-        });
-
         textInfo.setEditable(false);
         textInfo.setColumns(20);
         textInfo.setRows(5);
@@ -94,9 +87,8 @@ public class Menu extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap(384, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(indexaBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(consultaBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(trecBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(indexaBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)
+                    .addComponent(consultaBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(358, 358, 358))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
@@ -110,9 +102,7 @@ public class Menu extends javax.swing.JFrame {
                 .addComponent(indexaBtn)
                 .addGap(18, 18, 18)
                 .addComponent(consultaBtn)
-                .addGap(30, 30, 30)
-                .addComponent(trecBtn)
-                .addGap(18, 18, 18)
+                .addGap(71, 71, 71)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(43, 43, 43))
         );
@@ -128,14 +118,13 @@ public class Menu extends javax.swing.JFrame {
                     line, parts[];
             String url = "http://localhost:8983/solr";
             if (hasCollection(url)) {
-                int opc = JOptionPane.showConfirmDialog(null, "Solr has documents, do you want to reset?");
+                int opc = JOptionPane.showConfirmDialog(null, "Solr tiene un core, deseas hacer un reset?");
                 if (opc == 0) {
                     // Reset Colecciones
                     DeletingAllDocuments();
                 }
             }
             JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setFileFilter(new FileNameExtensionFilter("All Files", "*.*"));
             int result = fileChooser.showOpenDialog(null);
             File file = null;
             if (result == JFileChooser.APPROVE_OPTION) {
@@ -172,11 +161,7 @@ public class Menu extends javax.swing.JFrame {
                     } else {
                         text = text + part;
                     }
-                    if ((line.startsWith(".X", 0)) || "IGNORING".equals(state)) {  //referencias cruzadas del documento     
-                        //no hago nada
-                    } else {
-                        //aquí tampoco
-                    }
+                    
                 }
             }
             indexaDocumento(index, title, author, text);
@@ -193,7 +178,7 @@ public class Menu extends javax.swing.JFrame {
         // TODO add your handling code here:
         try {
             Scanner sc = null;
-            String text = null, line;
+            String text = "", line,state = "false";
             JFileChooser fileChooser = new JFileChooser();
             //fileChooser.setFileFilter(new FileNameExtensionFilter("All Files", "*.*"));
             int result = fileChooser.showOpenDialog(null);
@@ -205,33 +190,38 @@ public class Menu extends javax.swing.JFrame {
             sc = new Scanner(file);
             while (sc.hasNextLine()) {
                 line = sc.nextLine();
-                //System.out.println(line);
-                //  indice
-                if (line.startsWith(".W", 0)) {
-                    //desc.add(line);
-                    text = sc.next() + " ";
-                    for (int i = 0; i < 4; i++) {
-                        text = text + sc.next() + " ";
+                if (line.startsWith(".I")) {
+                     state="false";
+                     if (!text.equals("")) {
+                         searchDocuments(text);
+                         text="";
                     }
-                    text = text.replaceAll("[\\[\\](){}]", "");
-                    searchDocuments(text);
                 }
-                text = "";
-
+                if ("true".equals(state)) {
+                    text =text + line+" ";
+                    text = text.replaceAll("[\\[\\](){}:]", "");
+                }
+                if (line.startsWith(".W", 0)) {
+                    state="true";
+                   
+                }
             }
-
-        } catch (HeadlessException | IOException | SolrServerException | NullPointerException e) {
-            JOptionPane.showMessageDialog(null, "Error al realizar consulta.");
-        }
-    }//GEN-LAST:event_consultaBtnActionPerformed
-
-    private void trecBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_trecBtnActionPerformed
-        // TODO add your handling code here:
-        try {
+            JOptionPane.showMessageDialog(null, "Consulta Realizada");
+            JOptionPane.showMessageDialog(null, "El programa procederá a crear el fichero trec correspondiente");
+              try {
             if (trecDoc.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "No se ha realizado ninguna consulta");
             } else {
-                if (createQRYTrec() && createRELTrec()) {
+                String path="";
+                JOptionPane.showMessageDialog(null, "Indica el directorio donde se almacenarán los datos:");
+                JFileChooser t = new JFileChooser();
+                t.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                int selection = t.showSaveDialog(null);
+                if (selection == JFileChooser.APPROVE_OPTION) {
+                    path = t.getSelectedFile().getAbsolutePath();
+                }
+                if (createQRYTrec(path)) {
+
                     JOptionPane.showMessageDialog(null, "Momento de evaluar.");
                 } else {
                     JOptionPane.showMessageDialog(null, "Faltan documentos para poder usar el Trec Eva");
@@ -240,7 +230,10 @@ public class Menu extends javax.swing.JFrame {
         } catch (HeadlessException e) {
             System.out.println(e);
         }
-    }//GEN-LAST:event_trecBtnActionPerformed
+        } catch (HeadlessException | IOException | NullPointerException | SolrServerException e) {
+            JOptionPane.showMessageDialog(null, "Error al realizar consulta.");
+        } 
+    }//GEN-LAST:event_consultaBtnActionPerformed
 
     /**
      * @param args the command line arguments
@@ -257,7 +250,6 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JButton indexaBtn;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea textInfo;
-    private javax.swing.JButton trecBtn;
     // End of variables declaration//GEN-END:variables
  public void DeletingAllDocuments() {
         String url = "http://localhost:8983/solr/micoleccion";
@@ -310,40 +302,35 @@ public class Menu extends javax.swing.JFrame {
     }
 
     public void searchDocuments(String desc) throws SolrServerException, IOException {
+        noConsultas++;
         HttpSolrClient solr = new HttpSolrClient.Builder("http://localhost:8983/solr/micoleccion").build();
         SolrQuery query = new SolrQuery();
         query.setQuery("*");
         query.addFilterQuery("text: " + desc);
-        query.setFields("index", "score");
+        query.setFields("index", "id", "score", "title");
         QueryResponse rsp = solr.query(query);
         docs = rsp.getResults();
         int tm = docs.size();
-        //System.out.println("Tamaño de la consulta: " + tm);
+        //System.out.println("Tamaño de la consulta : " + tm);
         for (int i = 0; i < tm; i++) {
             textInfo.append(docs.get(i).values().toString() + "\n");
             //  Añadimos el valor de cada consulta al doc global
+            docs.get(i).setField("Consulta", noConsultas);
             trecDoc.add(docs.get(i));
         }
     }
 
-    private boolean createQRYTrec() {
+    private boolean createQRYTrec(String path) {
         boolean isCreated = false;
         try {
-            String path = "", team = "ETSI", line, document, fichero = "";
-            JFileChooser t = new JFileChooser();
-            t.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            int selection = t.showSaveDialog(null);
-            if (selection == JFileChooser.APPROVE_OPTION) {
-                path = t.getSelectedFile().getAbsolutePath();
-                System.out.println(path);
-                fichero = JOptionPane.showInputDialog(null, "Introduzca el nombre del fichero: ") + ".TREC";
-                path = path + "\\" + fichero;
-            }
+            String team = "ETSI", line, document, fichero = "";
+            fichero = JOptionPane.showInputDialog(null, "Introduzca el nombre del fichero trec Solr: ") + ".TREC";
+            path = path + "\\" + fichero;
             BufferedWriter w = new BufferedWriter(new FileWriter(path));
             int tm = trecDoc.size();
             for (int i = 0; i < tm; i++) {
                 document = trecDoc.get(i).getFieldValue("index").toString().replaceAll("[\\[\\](){}]", "");
-                line = "1 Q0" + " " + document + " " + i + " " + trecDoc.get(i).getFieldValue("score") + " " + team + "\n";
+                line = trecDoc.get(i).getFieldValue("Consulta") + " " + "Q0" + " " + document + " " + i + " " + trecDoc.get(i).getFieldValue("score") + " " + team + "\n";
                 //  System.out.println(line);
                 w.write(line);
             }
@@ -357,94 +344,6 @@ public class Menu extends javax.swing.JFrame {
         return isCreated;
     }
 
-    public boolean createRELTrec() {
-        boolean isCreated = false;
-        try {
-            Scanner sc = null;
-            String line, path = "", fichero;
-            //  Indicate trec directory to save
-            JOptionPane.showMessageDialog(null, "Seleccione el directorio donde se guardara el fichero TREC:");
-            JFileChooser t = new JFileChooser();
-            t.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            int selection = t.showSaveDialog(null);
-            if (selection == JFileChooser.APPROVE_OPTION) {
-                path = t.getSelectedFile().getAbsolutePath();
-                System.out.println(path);
-                fichero = JOptionPane.showInputDialog(null, "Introduzca el nombre del fichero: ") + ".TREC";
-                path = path + "\\" + fichero;
-            }
-            BufferedWriter w = new BufferedWriter(new FileWriter(path));
-            //  open rel file
-            JOptionPane.showMessageDialog(null, "Seleccione el fichero REL:");
-            JFileChooser fileChooser = new JFileChooser();
-            int result = fileChooser.showOpenDialog(null);
-            File file = null;
-            if (result == JFileChooser.APPROVE_OPTION) {
-                file = fileChooser.getSelectedFile();
-            }
-            BufferedReader r = new BufferedReader(new FileReader(file));
-            while ((line = r.readLine()) != null) {
-                String[] parts = line.split("\\s+");
-                if (parts.length == 5) {
-                    parts[0]=parts[1];
-                    parts[3]=parts[2];
-                    parts[2]=parts[1];
-                    parts[1]="0";
-                    w.write(parts[0]+" "+parts[1]+" "+parts[2]+" "+parts[3]+"\n");
-                }
-            }
-            isCreated=true;
-        } catch (Exception e) {
-        }
-        return isCreated;
-    }
-    /* private boolean createRELTrec() {
-        boolean isCreated = false;
-        try {
-            Scanner sc = null;
-            String line = "", path = "", fichero;
-            //  Indicate trec directory to save
-            JOptionPane.showMessageDialog(null, "Seleccione el directorio donde se guardara el fichero TREC:");
-            JFileChooser t = new JFileChooser();
-            t.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            int selection = t.showSaveDialog(null);
-            if (selection == JFileChooser.APPROVE_OPTION) {
-                path = t.getSelectedFile().getAbsolutePath();
-                System.out.println(path);
-                fichero = JOptionPane.showInputDialog(null, "Introduzca el nombre del fichero: ") + ".TREC";
-                path = path + "\\" + fichero;
-            }
-            BufferedWriter w = new BufferedWriter(new FileWriter(path));
-            //  Open file Trec
-            JOptionPane.showMessageDialog(null, "Seleccione el fichero REL:");
-            JFileChooser fileChooser = new JFileChooser();
-            int result = fileChooser.showOpenDialog(null);
-            File file = null;
-            if (result == JFileChooser.APPROVE_OPTION) {
-                file = fileChooser.getSelectedFile();
-            }
-
-            sc = new Scanner(file);
-            while (sc.hasNextLine()) {
-                line = sc.nextLine();
-                 line = convertRELFormat(line);
-                w.write(line + "\n");
-            }
-            w.close();
-            isCreated = true;
-        } catch (HeadlessException | IOException | NullPointerException e) {
-            JOptionPane.showMessageDialog(null, "Error al realizar consulta.");
-        }
-        return isCreated;
-    }
-     */
- /*  private String convertRELFormat(String line) {
-        String l="";
-        line = line.replaceAll("0.000000", "");
-       String[]elements = line.split(" ");
-        for (int i = 0; i < elements.length; i++) {
-            System.out.println("e: "+i+": "+elements[i]);
-        }
-        return l;
-    }*/
+   
+    
 }

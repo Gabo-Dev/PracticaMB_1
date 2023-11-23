@@ -26,9 +26,8 @@
           <Group type="102" attributes="0">
               <EmptySpace pref="384" max="32767" attributes="0"/>
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Component id="indexaBtn" max="32767" attributes="0"/>
+                  <Component id="indexaBtn" pref="141" max="32767" attributes="0"/>
                   <Component id="consultaBtn" max="32767" attributes="0"/>
-                  <Component id="trecBtn" min="-2" pref="141" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="358" max="-2" attributes="0"/>
           </Group>
@@ -46,9 +45,7 @@
               <Component id="indexaBtn" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="consultaBtn" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
-              <Component id="trecBtn" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="71" max="-2" attributes="0"/>
               <Component id="jScrollPane1" min="-2" pref="162" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="43" max="-2" attributes="0"/>
           </Group>
@@ -70,14 +67,6 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="consultaBtnActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JButton" name="trecBtn">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Trec Eva"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="trecBtnActionPerformed"/>
       </Events>
     </Component>
     <Container class="javax.swing.JScrollPane" name="jScrollPane1">
